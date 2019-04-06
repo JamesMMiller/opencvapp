@@ -98,7 +98,7 @@ class ObjectTracker():
 
 		# Step 1: Undistort points
 		if len(points) > 0:
-			points_undistorted = cv2.undistortPoints(points, self.mtx, self.dist)
+			points_undistorted = cv2.undistortPoints(points, self.mtx, self.dist, P = self.mtx)
 		points_undistorted = np.squeeze(points_undistorted, axis=1)
 		result = []
 		x = (points_undistorted[0, 0] - c_x) / f_x * z
