@@ -320,12 +320,9 @@ class KivyCamera(Image):
 		    			allvariables.appendpostionvalue(undisrortedposition)
 		    			self.takesnapshot = False
 		    			displayimage(trackedobject.draw_recordframe(len(allvariables.getrecordedposition())))
-		    			print("here")
 		    		else:
 		    			displayimage(trackedobject.draw_recordframe(len(allvariables.getrecordedposition())))
 	    	else:
-		    	#displayimage(frame)
-		    	print("here")
 		    	displayimage(CalibrationinprogressScreen.calibrationobj.draw_imagenum(frame))
 
 
