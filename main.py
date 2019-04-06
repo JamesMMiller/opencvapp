@@ -1,7 +1,5 @@
 import numpy as np
 import imutils
-import argparse
-from collections import deque
 from kivy.app import App
 from kivy.base import EventLoop
 from kivy.uix.image import Image
