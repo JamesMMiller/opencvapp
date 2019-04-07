@@ -277,6 +277,8 @@ class ObjectVariables():
 		return self.recordbool
 	def settakesnapshot(self, boolean):
 		self.takesnapshot = boolean
+	def gettakesnapshot(self):
+		return self.takesnapshot
 	def setviewoutput(self, view):
 		self.viewoutput = view
 	def getviewoutput(self):
