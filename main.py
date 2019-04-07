@@ -313,10 +313,10 @@ class KivyCamera(Image):
 		    	elif allvariables.getviewoutput() == 'result':
 		            displayimage(trackedobject.draw_circle())
 		    	elif allvariables.getviewoutput() == 'record':
-		    		if (allvariables.getrecordbool() == True or self.takesnapshot == True) and trackedobject.calculate_distance() != None:
+		    		if (allvariables.getrecordbool() == True or allvariables.gettakesnapshot() == True) and trackedobject.calculate_distance() != None:
 		    			undisrortedposition = trackedobject.undistort_point()
 		    			allvariables.appendpostionvalue(undisrortedposition)
-		    			self.takesnapshot = False
+		    			allvariables.settakesnapshot(Fasle)
 		    			displayimage(trackedobject.draw_recordframe(len(allvariables.getrecordedposition())))
 		    		else:
 		    			displayimage(trackedobject.draw_recordframe(len(allvariables.getrecordedposition())))
