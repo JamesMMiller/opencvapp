@@ -10,10 +10,6 @@ class ObjectTracker():
 		self.objectsize = objectsize
 		self.mtx = mtx
 		self.dist = dist
-
-	def calculate_distance(self, width_of_object, focalLength, detectedwidth):
-
-		return ((float(width_of_object) * float(focalLength)) / float(detectedwidth))
 	def get_mask(self):
 		hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
@@ -55,10 +51,10 @@ class ObjectTracker():
 
 	def calculate_distance(self):
 		x,y,radius,center = self.calculate_circle()
-		focalLength = self.mtx[0, 0]
 		width_of_object = self.objectsize * 10
 
-		if radius != None:
+		if radius and self.mtx != None:
+			focalLength = self.mtx[0, 0]
 			detectedwidth = radius * 2
 
 			return ((float(width_of_object) * float(focalLength)) / float(detectedwidth))
@@ -67,11 +63,10 @@ class ObjectTracker():
 	
 	def draw_circle(self):
 		x,y,radius,center = self.calculate_circle()
-
-		F = self.mtx[0, 0]
-		W = self.objectsize*10
-			# only proceed if the radius meets a minimum size
-		if radius != None:
+		# only proceed if the radius meets a minimum size
+		if radius and self.mtx != None:
+			F = self.mtx[0, 0]
+			W = self.objectsize*10
 			distance = self.calculate_distance() 
 			if radius > 10:# draw the circle and centroid on the result,
 				cv2.circle(self.image, (int(x), int(y)), int(radius),(0, 255, 255), 2)
@@ -85,8 +80,6 @@ class ObjectTracker():
 		x,y,radius,center = self.calculate_circle()
 		z = self.calculate_distance()
 		assert z != None
-
-
 		f_x = self.mtx[0, 0]
 		f_y = self.mtx[1, 1]
 		c_x = self.mtx[0, 2]
@@ -131,7 +124,7 @@ class CameraCalibration:
 		# termination criteria
 		self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-		# prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+		# prepare object points corrisponding to chessboard (in this case a 7x9 grid)
 		self.objp = np.zeros((7*9,3), np.float32)
 		self.objp[:,:2] = np.mgrid[0:9,0:7].T.reshape(-1,2)*20
 		self.objp = self.objp.reshape(-1,1,3)
@@ -157,13 +150,6 @@ class CameraCalibration:
 	def appendchessboardpoints(self,image):
 		gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
-		corners = cv2.goodFeaturesToTrack(gray,25,0.01,10)
-		corners = np.int0(corners)
-
-		for i in corners:
-		    x,y = i.ravel()
-		    cv2.circle(image,(x,y),3,(0,0,255),-1)
-
 		# Find the chess board corners
 		ret, corners = cv2.findChessboardCorners(gray, (9,7),flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
 
@@ -187,11 +173,11 @@ class CameraCalibration:
 		return mtx, dist, tot_error
 
 class ObjectVariables():
-	def __init__(self):
+	def __init__(self): 
 		self.hsv_tresholds = self.loadhsv()
 		self.objectsize = self.loadobjectsize()
 		self.dist,self.mtx,self.needscalibration = self.loadcalibration()
-		self.capture = cv2.VideoCapture(0)
+		self.capture = self.getvideocapture()
 		self.recordedpositions = []
 		self.viewoutput = 'original'
 		self.takeimage = False
@@ -291,6 +277,11 @@ class ObjectVariables():
 		return self.capture
 	def setcapture(self,capture):
 		self.capture = capture
+	def getvideocapture(self):
+		for i in range(0,10):
+			cap = cv2.VideoCapture(i)
+			if cap != None and cap.isOpened():
+				return cap
 	def capturerelease(self):
 		self.capture.release()
 	def appendpostionvalue(self,position):
