@@ -1,5 +1,4 @@
 import numpy as np
-import imutils
 from kivy.app import App
 from kivy.base import EventLoop
 from kivy.uix.image import Image
@@ -223,6 +222,67 @@ Builder.load_string('''
             Button:
                 text: 'Enter'
                 on_press: root._enter()
+<outputoption>
+	title: 'outputoption'
+	size_hint: None, None
+	size: 400, 120
+	BoxLayout:
+		orientation: 'vertical'
+        pos: self.pos
+        size: root.size
+
+        BoxLayout:
+            Label:
+                text: 'Output as blender script or position values?'
+        BoxLayout:
+            orientation: 'horizontal'
+            Button:
+                text: 'blender script'
+                on_press: root.blender_output()
+            Button:
+                text: 'position values'
+                on_press: root.position_output()
+<blenderoutputoptions>
+	title: 'blenderoutputoptions'
+	size_hint: None, None
+	size: 400, 160
+	filename: filename.text
+	framespacing: framespacing.text
+	ballsize: sizeinput.text
+	BoxLayout:
+		orientation: 'vertical'
+        pos: self.pos
+        size: root.size
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: 'Framespacing (int)'
+            TextInput:
+                id: framespacing
+                multiline: False
+                hint_text:'Enter num'
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: 'objectsize(float)'
+            TextInput:
+                id:sizeinput
+                multiline: False
+                hint_text:'Enter float'
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: 'Enter Filename'
+            TextInput:
+                id: filename
+                multiline: False
+                hint_text:'Filename'
+        BoxLayout:
+            orientation: 'horizontal'
+            Button:
+                text: 'Enter'
+                on_press: root._enter()
 
 <filenameinput>
 	title: 'filenameinput'
@@ -268,7 +328,7 @@ class KivyCamera(Image):
         else:
 	        self.clock_variable.cancel()
 	        self.clock_variable = Clock.schedule_interval(self.update, 1.0 / fps)
-        
+       
 
     def stop(self):
         self.capture = None
@@ -278,7 +338,7 @@ class KivyCamera(Image):
 
     def update(self, dt):
 
-    	def displayimage(image,wait=0):
+    	def displayimage(image):
     		texture = self.texture #get kivy texture from class
     		try:
     			w, h = image.shape[1], image.shape[0]  #get image parameters
@@ -316,7 +376,7 @@ class KivyCamera(Image):
 		    		if (allvariables.getrecordbool() == True or allvariables.gettakesnapshot() == True) and trackedobject.calculate_distance() != None:
 		    			undisrortedposition = trackedobject.undistort_point()
 		    			allvariables.appendpostionvalue(undisrortedposition)
-		    			allvariables.settakesnapshot(Fasle)
+		    			allvariables.settakesnapshot(False)
 		    			displayimage(trackedobject.draw_recordframe(len(allvariables.getrecordedposition())))
 		    		else:
 		    			displayimage(trackedobject.draw_recordframe(len(allvariables.getrecordedposition())))
@@ -405,7 +465,7 @@ class RecordScreen(Screen):
 			allvariables.settakesnapshot(True)
 		def endrecord(self):
 			allvariables.setrecordbool(False)
-			obj = filenameinput(self)
+			obj = outputoption(self)
 			obj.open()
 class ballsizeinput(Popup):			
 	def __init__(self, parent, *args):
@@ -420,6 +480,42 @@ class ballsizeinput(Popup):
 			allvariables.setobjectsize(float(self.text))
 			allvariables.saveobjectsize()
 			self.dismiss()
+
+class outputoption(Popup):
+	def __init__(self, parent, *args):
+		super(outputoption, self).__init__(*args)
+
+	def blender_output(self):
+		obj = blenderoutputoptions(self)
+		obj.open()
+		self.dismiss()
+		
+	def position_output(self):
+		obj = filenameinput(self)
+		obj.open()
+		self.dismiss()
+
+class blenderoutputoptions(Popup):
+	def __init__(self, parent, *args):
+		super(blenderoutputoptions, self).__init__(*args)
+
+	def _enter(self):
+		if not self.filename or not self.framespacing or not self.ballsize or not self.framespacing.isdigit():
+			popup = Popup(title='input error',content=Label(text='please input all values correctly'),
+            	size_hint=(None, None), size=(400, 400))
+			popup.open()
+		else:
+			outputblenderfilename = str(self.filename)
+			framespacing = str(self.framespacing)
+			size = str(self.ballsize)
+			self.dismiss()
+			allvariables.saveblenderscipt(outputblenderfilename,framespacing,size)
+			popup2 = Popup(title='Save confirmation',content=Label(text='Blender script saved to:\n'+str(outputblenderfilename)+'.py'),
+            	size_hint=(None, None), size=(400, 400))
+			popup2.open()
+
+
+
 class filenameinput(Popup):
 	def __init__(self, parent, *args):
 		super(filenameinput, self).__init__(*args)

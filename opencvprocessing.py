@@ -53,7 +53,7 @@ class ObjectTracker():
 		x,y,radius,center = self.calculate_circle()
 		width_of_object = self.objectsize * 10
 
-		if radius and self.mtx != None:
+		if radius and self.mtx.all != None:
 			focalLength = self.mtx[0, 0]
 			detectedwidth = radius * 2
 
@@ -64,7 +64,7 @@ class ObjectTracker():
 	def draw_circle(self):
 		x,y,radius,center = self.calculate_circle()
 		# only proceed if the radius meets a minimum size
-		if radius and self.mtx != None:
+		if radius and self.mtx.all != None:
 			F = self.mtx[0, 0]
 			W = self.objectsize*10
 			distance = self.calculate_distance() 
@@ -293,5 +293,33 @@ class ObjectVariables():
 	def saverecordedpositions(self,filename):
 		postionsstore = JsonStore(filename +'.json')
 		postionsstore.put('3dpostions_list', postionvalues = self.recordedpositions)
+	def saveblenderscipt(self,outputblenderfilename,framespacing,size):
+		fname = outputblenderfilename + '.py'
+		data ='''import bpy
+import json
+import os, sys
+
+current_file_path = '__file__'
+
+script_path = os.path.abspath(os.path.dirname(sys.argv[0]))
+
+position_list = '''+str(self.recordedpositions)+'''
+bpy.ops.mesh.primitive_uv_sphere_add(segments=32, size='''+size+''', location=position_list[0])
+bpy.ops.object.shade_smooth()
+ob = bpy.context.active_object
+
+frame_num = 0
+
+for positions in position_list:
+    bpy.context.scene.frame_set(frame_num)
+    ob.location = (positions[0]/100,positions[1]/100,positions[2]/100)
+    ob.keyframe_insert(data_path="location", index=-1)
+    frame_num += '''+str(framespacing)
+
+		with open(fname, 'w') as f:
+			f.write(data)
+
+
+
 
 
